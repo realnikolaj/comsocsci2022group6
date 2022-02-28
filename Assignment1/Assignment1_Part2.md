@@ -79,7 +79,7 @@ plt.show()
 
 
 Using a log scale on the y-axis allows us to see long term trends, ranging from very few comments in the start and the multiple orders of comments in the end of the time period. If we had used cartesian coordinates the trend of the small numbers would not be visible.
-The advantage of using a rolling window, here centered ont he period, smoothes the data in order to capture the overall trend of the data.
+The advantage of using a rolling window, here centered on the period, smoothes the data in order to capture the overall trend of the data.
 
 
 ### 4. Now take a minute to look at these two figures. Then write in a couple of lines: What are the three most important observations you can draw by looking at the figures?
