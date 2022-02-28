@@ -101,9 +101,6 @@ plt.title("Figure 3: Rolling weekly GME stock volume and number of comments on r
 plt.show()
 ```
 
-!!!! Skal vi nævne at der er tale om ln(x) ?
-!!!! Calc stats for these claims, eg Pearson ?
-
 Figure 3 shows the rolling weekly GME stock volume and number of comments in a dual axis chart, showing a clear correlation between volume and number of comments. 
 
 2)
@@ -161,8 +158,6 @@ plt.show()
 
 ### 5. Now take a minute to look at the figure you just prepared. Then write in a couple of lines: What are the three most salient observations you can draw by looking at it? 
 
-
-!!!!!!Skal vi lave linear regression på 2021 data?
 
 When looking at Figure 4 we see an overall correlating trend between the daily log-change in comments and log-return on  investment. This trend is even more pronounced for the 2021 data where we observe a linear relationship which suggests a power law relationship, log-change in comments change by an order of magnitude compared to the daily log-return, equal to the slope of the fitted line.
 
