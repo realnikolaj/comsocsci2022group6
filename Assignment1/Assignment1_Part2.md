@@ -27,7 +27,7 @@ from scipy import stats
 ```
 
 ```python
-#Setting up data
+# Setting up data
 GME_marketdata = pd.read_csv('../data/GME.csv', parse_dates=['Date']).set_index('Date')
 rolled_marketdata = GME_marketdata['Volume'].rolling('7D', center=True).mean()
 
@@ -40,6 +40,7 @@ GME_comments['weekly'] = GME_comments['daily'].rolling('7D', center=True).mean()
 ```
 
 ```python
+# Setup matplotlib formatting
 def setup_mpl():
     mpl.rcParams['font.family'] = 'Helvetica Neue'
     mpl.rcParams['lines.linewidth'] = 1
@@ -92,20 +93,16 @@ ax.set_yscale('log')
 ax.xaxis.set_major_formatter(myFormat)
 ax2 = ax.twinx()
 ax2.plot(GME_comments['weekly'].index,GME_comments['weekly'].values, color='red', label="1 week rolling average comments")
-ax2.set_ylabel('Comments')
+ax2.set_ylabel('No. of comments')
 ax2.set_yscale('log')
 fig.legend(loc='upper left', bbox_to_anchor=(0.1, 0.9))
 fig.tight_layout()
-plt.savefig('GME weekly volume and comments.png')
 plt.title("Figure 3: Rolling weekly GME stock volume and number of comments on r/wallstreetbet subreddit", y=-0.15, fontsize=10)
 plt.show()
 ```
 
-Figure 3 shows the rolling weekly GME stock volume and number of comments in a dual axis chart, showing a clear correlation between volume and number of comments. 
-
-2)
-
-3)
+Figure 3 shows the rolling weekly GME stock volume and number of comments in a dual axis chart, showing a correlation between volume and number of comments, specifically we see that when the volume goes up, we see an increase in number of comments. 
+After september 2020 we see a sharp rise in the volume of trades in GME stock, also the boom and bust cycles in trade volume from september 2020 indicate a degree of speculative trading.
 
 
 ## Part 2.2: Returns vs number of comments using scatter-plots. In this part of the assignment, we will look at the association between GME market indicators and the volume of comments on Reddit
@@ -114,6 +111,7 @@ Figure 3 shows the rolling weekly GME stock volume and number of comments in a d
 ### 1. & 2. Compute the daily log-returns and the daily log-change in number of new comments
 
 ```python
+# Resample to daily and compute log-returns and log-change in comments
 log_return_comments = pd.DataFrame(np.log(GME_marketdata['Close'] / GME_marketdata['Close'].shift(1)))
 daily_comments = GME_comments.resample('1D').count()['id']
 daily_comments = daily_comments[daily_comments!=0]
@@ -125,7 +123,7 @@ log_return_comments.dropna(inplace=True)
 ### 3. Compute the correlation coefficient between the series computed in step 1 and step 2. Is the correlation statistically significant?
 
 ```python
-print(f" Pearson correlation coeffcient for the daily log change in comments and return:{stats.pearsonr(log_return_comments['Close'],log_return_comments['comments'])[0]:.2f}, p-value:{stats.pearsonr(log_return_comments['Close'],log_return_comments['comments'])[1]:.2f}")
+print(f" Pearson correlation coeffcient for the daily log change in comments and return:{stats.pearsonr(log_return_comments['Close'],log_return_comments['comments'])[0]:.2f}, p-value:{stats.pearsonr(log_return_comments['Close'],log_return_comments['comments'])[1]:.9f}")
 ```
 
 The Pearson correlation coefficient shows a weak positive linear relationship between daily log change and return, but the p-value = 0.00 suggests that it is statistically significant.
@@ -134,6 +132,7 @@ The Pearson correlation coefficient shows a weak positive linear relationship be
 ### 4. Make a scatterplot of the daily log-return on investment for the GME stock against the daily log-change in number of comments.
 
 ```python
+# Prepare data for scatterplot
 log_return_comments['close_price'] = GME_marketdata['Close']
 log_return_comments['color'] = 'blue'
 log_return_comments['color'].loc['2021'] = 'green'
@@ -142,6 +141,8 @@ fig, ax = plt.subplots(dpi=400)
 ax.scatter(log_return_comments['Close'],log_return_comments['comments'], s=log_return_comments['close_price'], c=log_return_comments['color'], alpha=0.7)
 ax.set_ylabel('Daily log-change in number of comments')
 ax.set_xlabel('Daily log-return on investment for the GME stock')
+ax.set_xlim(-0.5,0.5)
+ax.set_ylim(-5,5)
 
 for size in [2, 10, 50]:
     plt.scatter([], [], c='k', alpha=0.3, s=size, label=str(size) +' USD')
@@ -159,10 +160,13 @@ plt.show()
 ### 5. Now take a minute to look at the figure you just prepared. Then write in a couple of lines: What are the three most salient observations you can draw by looking at it? 
 
 
-When looking at Figure 4 we see an overall correlating trend between the daily log-change in comments and log-return on  investment. This trend is even more pronounced for the 2021 data where we observe a linear relationship which suggests a power law relationship, log-change in comments change by an order of magnitude compared to the daily log-return, equal to the slope of the fitted line.
+When looking at Figure 4 we see an overall correlating trend between the daily log-change in comments and log-return on  investment, specifically focusing on greater positive changes in closing price semms to positively affect change in number of comments, and vice versa. 
+This trend is even more pronounced for the 2021 data where we observe a linear relationship which suggests a power law relationship, log-change in comments change by an order of magnitude compared to the daily log-return, equal to the slope of the fitted line. 
+We see a greater positive log-return in 2021, than 2020.
 
 
 ### 6. Based on the exploratory data visualization in Exercises 2 and 3, what can you conclude on the research question: *Is the activity on wallstreetbet related to the price of the GME stock?*
 
 
-There is evidence causality between the activity on wallstreetbet and the price of the GME stock, but there is not enough evidence to conclude the direction. The activity on reddit is certainly to a degreee a result of market changes for the GME stock, but the reverse could also be the case.
+There is evidence of correlation between the activity on wallstreetbet and the price of the GME stock. Correlation does equal causation and a hidden confounder could be the reason for the correlation found, although it was on on the subreddit that the meme stock phenomena of 2020 began.
+The activity on reddit is certainly to a degreee a result of market changes for the GME stock, but the reverse could also easily be the case.
