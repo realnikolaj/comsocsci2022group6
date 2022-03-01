@@ -8,11 +8,12 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.13.7
   kernelspec:
-    display_name: Python [conda env:comsocsci2022]
+    display_name: Python 3 (ipykernel)
     language: python
-    name: conda-env-comsocsci2022-py
+    name: python3
 ---
 
+<!-- #region -->
 # Assignment 1
 ## Group 6
 > s183930 - Nikolaj S. Povlsen
@@ -21,8 +22,6 @@ jupyter:
 
 > s217176 - Johan Fredrik Bjørnland
 
-
-<!-- #region -->
 ## Link to Git repository
 https://github.com/realnikolaj/comsocsci2022group6
 
@@ -30,10 +29,11 @@ https://github.com/realnikolaj/comsocsci2022group6
 
 ## Contribution statement
 
-!!!!!!!!!!!!!!!Husk contribution statement her!!!!!!!!!!!!!!
-
-
-
+We worked collaboratory as a group, main responsibles are:
+Part 1: Steffen S184208  
+Part 2: Steffen S184208  
+Part 3: Johan   S217176  
+Part 4: Nikolaj S183930
 <!-- #endregion -->
 
 # Part 1: Datasets for Computational Social Science
@@ -115,6 +115,9 @@ import netwulf as nw
 from scipy import stats
 import networkx as nx
 import random
+from IPython.display import Image
+import warnings
+warnings.filterwarnings('ignore')
 ```
 
 ```python
@@ -472,22 +475,22 @@ L = DG.number_of_edges()
 ```
 
 <div class="alert alert-block alert-danger">
-1. Compute the value of p such that the number of expected edges of the random network equals the number of edges in the redditor network (see equation 3.2 in your Network Science Book).
+1. Compute the value of p such that the number of expected edges of the random network equals the number of edges in the redditor network (see equation 3.2 in your Network Science Book)[1].
 </div>
 
 
 <div class="alert alert-block alert-info">
 
-<b>Note:</b> The equation (3.2) from Ch. 3 seem to be in conflict with the equation in Ch. 2 eq (2.5) which is specifically stated to apply to directed graphs. Since most of chapter 3 is revolving around undirected networks and since we had discrepencies getting the prober amount of links in our random network using these equation we will be using (2.5) instead and verifying with emperical values. </div>
+<b>Note:</b> The equation (3.2) from Ch. 3 in networksciencebook[1] seem to be in conflict with the equation in Ch. 2 eq (2.5) which is specifically stated to apply to directed graphs. Since most of chapter 3 is revolving around undirected networks and since we had discrepencies getting the prober amount of links in our random network using these equation we will be using (2.5) instead and verifying with emperical values. </div>
 
 
 >2.What is the value of p? Compute the average value of the degree < k > (using the formula).
 
 
-First we calculate p and \<k> for the **directed network DG** using eq. (2.5) to create our random null network using p.  
+First we calculate p and \<k> for the **directed network DG** using eq. (2.5) in [1] to create our random null network using p.  
 Using (2.5),  L and N (No. of edges and No. of nodes) in the directed network DG the average degree of the directed network i.e. $\left< k \right>$ which by Ch. 2.3 is equal to the average degree **in** and average degree **out**.   
 (2.5): $\left< k^{in} \right> = \left< k^{out} \right> = \frac{L}{N}$  
-Since the amount of possible distinct pairs is doubled from the undirected to the directed network i.e. in the directed network en edge from A to B doesnt equal an edge from B to A as these two edges are now distinguishable, we should simply use $p = frac{k}{N}$ to calculate the probability of pairing two random nodes.
+Since the amount of possible distinct pairs is doubled from the undirected to the directed network i.e. in the directed network en edge from A to B doesnt equal an edge from B to A as these two edges are now distinguishable, we should simply use $p = \frac{k}{N}$ to calculate the probability of pairing two random nodes.
 
 ```python
 # Using (3.2) to calculate p
@@ -567,49 +570,29 @@ G_isolated = [(n) for n in list(G.nodes) if G.degree[n] == 0]
 G.remove_nodes_from(G_isolated)
 null_isolated = [(n) for n in list(null.nodes) if null.degree[n] == 0]
 null.remove_nodes_from(null_isolated)
-
-
-```
-
-```python
-# Placeholder cell for visualizing entire network
-# Don't run this, it is slow and cluttered, run next cell which uses
-# a sampled subgrap
-
-
-
-#stylized_network, config = nw.visualize(DG)
-#fig, ax = nw.draw_netwulf(stylized_network)
-#plt.show()
 ```
 
 ```python
 # Visualize a subgraph of redditors directed network
 
-k = 5000
-sampled_nodes = random.sample(DG.nodes, k)
-sampled_graph = DG.subgraph(sampled_nodes)
-stylized_redditors_network, config = nw.visualize(sampled_graph)
+#k = 5000
+#sampled_nodes = random.sample(DG.nodes, k)
+#sampled_graph = DG.subgraph(sampled_nodes)
+#stylized_redditors_network, config = nw.visualize(sampled_graph)
+Image(filename = "../plots/redditors_network.png", width = 900, height = 450)
 ```
 
 ```python
 # Visualize a subgraph of the random null directed network
 
-sampled_nodes = random.sample(null.nodes, k)
-sampled_graph = null.subgraph(sampled_nodes)
-stylized_null_network, config = nw.visualize(sampled_graph)
-
+#sampled_nodes = random.sample(null.nodes, k)
+#sampled_graph = null.subgraph(sampled_nodes)
+#stylized_null_network, config = nw.visualize(sampled_graph)
+Image(filename = "../plots/null_network.png", width = 900, height = 450)
 ```
 
-```python
-# Sets up config loading from netwulf API and plots
+We don't see nearly as much clustering in the random network as we do in the redditors network. This fact is also discussed in our conclusion under Part4.2 where the take away is that using the probability parameter p to generate random edges is a gross estimate of how redditors actually interact with eachother. The difference in the plots, specifically in the clusters is probably caused by the various type of redditors and their tendencies to comment on certain post, submitters and even groups of redditors being more active than others. With the random network we only see the average interaction level of the typical redditor and no more.
 
-stylized_network, config = nw.visualize(sampled_graph)
-
-# Reproduce the visualisation
-#fig, ax = nw.draw_netwulf(stylized_network)
-#plt.show()
-```
 
 # Part 4.2 Clustering:
 ## Compare the clustering coefficient in the Redditors Network and its random counterpart.
@@ -624,9 +607,9 @@ stylized_network, config = nw.visualize(sampled_graph)
 # Computes the list and prints a few non-zero values
 
 c_coef = list(nx.clustering(null).values())
-sampls = random.sample([c_coef[i] for i in range(1, N+1) if c_coef[i] > 0], 5)
-print('Randomely selected non-zero clustering coefficient values')
-print(" c_r =", *(f"[{i:.3f}]" for i in sampls))
+#sampls = random.sample([c_coef[i] for i in range(1, N+1) if c_coef[i] > 0], 5)
+#print('Randomely selected non-zero clustering coefficient values')
+#print(" c_r =", *(f"[{i:.3f}]" for i in sampls))
 ```
 
 >Compute the average clustering across nodes of the random network. Is it consistent with the analytical prediction (network science book equation 3.21)?
@@ -667,3 +650,7 @@ Several reasons for this difference could be thought of:
 **Conlusion: Using estimated values to generate random edges between nodes in our null network misses most if not all of the mentioned dynamics above. Dynamics that portray different caracteristics for various redditors which in turn results in closer relations between some redditors and some redditors are more isolated. The random network simply links redditors with no underlying mechanism other than the probability parameter p.**
 
 
+
+
+referrence:
+[1] http://networksciencebook.com
