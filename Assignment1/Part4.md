@@ -13,189 +13,211 @@ jupyter:
     name: python3
 ---
 
-# Overview
-
-Networks (a.k.a. graphs) are widely used mathematical objects for representing and analysing social systems. 
-This week is about getting familiar with networks, and we'll focus on four main aspects:
-
-* Basic mathematical description of networks
-* The `NetworkX` library.
-* Building the network of GME redditors.
-* Basic analysis of the network of GME redditors.
-
-test
-
-
-# Part 1: Basic mathematical description of networks
-
-This week, let's start with some lecturing. You will watch some videos made by Sune for his course _Social Graphs and Interactions_, where he covers networks in details.  
-
-> **_Video Lecture_**. Start by watching the ["History of Networks"](https://youtu.be/qjM9yMarl70). 
-
-
-```python
-from IPython.display import YouTubeVideo
-YouTubeVideo("qjM9yMarl70",width=800, height=450)
-```
-
-> **_Video Lecture_**. Then check out a few comments on ["Network Notation"](https://youtu.be/MMziC5xktHs). 
-
-```python
-YouTubeVideo("MMziC5xktHs",width=800, height=450)
-```
-
-> _Reading_. We'll be reading the textbook _Network Science_ (NS) by Laszlo Barabasi. You can read the whole 
-> thing for free [**here**](http://barabasi.com/networksciencebook/). 
-> 
-> * Read chapter 1\.
-> * Read chapter 2\.
-> 
-
-
-> _Exercises_  
-> _Chapter 1_ (Don't forget that you should be answering these in a Jupyter notebook.) 
-> 
-> * List three different real networks and state the nodes and links for each of them.
-> * Tell us of the network you are personally most interested in. Address the following questions:
->   * What are its nodes and links? 
->   * How large is it? 
->   * Can be mapped out? 
->   * Why do you care about it? 
-> * In your view what would be the area where network science could have the biggest impact in the next decade? Explain your answer - and base it on the text in the book. 
-> 
-> _Chapter 2_
-> 
-> * Section 2.5 states that real networks are sparse. Can you think of a real network where each node has _many_ connections? Is that network still sparse? If yes, can you explain why?
-> 
-> There are more questions on Chapter 2 below.
-> 
-
-
-# Part 2: Exercises using the `NetworkX` library
-
-We will analyse networks in Python using the [NetworkX](https://networkx.org/) library. The cool thing about networkx is that it includes a lot of algorithms and metrics for analysing networks, so you don't have to code things from scratch. Get started by running the magic ``pip install networkx`` command. Then, get familiar with the library through the following exercises: 
-
->  *Exercises*:
-
-> * Go to the NetworkX project's [tutorial page](https://networkx.org/documentation/stable/tutorial.html). The goal of this exercise is to create your own notebook that contains the entire tutorial. You're free to add your own (e.g. shorter) comments in place of the ones in the official tutorial - and change the code to make it your own where ever it makes sense.
-> * Go to Section 2.12: [Homework](http://networksciencebook.com/chapter/2#homework2), then
->     * Write the solution for exercise 2.1 (the 'Königsberg Problem') from NS in your notebook.
->     * Solve exercise 2.3 ('Graph representation') from NS using NetworkX in your notebook. (You don't have to solve the last sub-question about cycles of length 4 ... but I'll be impressed if you do it).
->     * Solve exercise 2.5 ('Bipartite Networks') from NS using NetworkX in your notebook.
-
-
-# Part 3: Building the GME redditors network
-
-
-Ok, enough with theory :) It is time to go back to our cool dataset it took us so much pain to download! And guess what? We will build the network of GME Redditors. Then, we will use some Network Science to study some of its properties.
-
-<!-- #region -->
-
-
-> 
-> *Exercise*: Build the network of Redditors discussing about GME on r\wallstreetbets. In this network, nodes correspond to authors of comments, and a direct link going from node _A_ to node _B_ exists if _A_ ever answered a submission or a comment by _B_. The weight on the link corresponds to the number of times _A_ answered _B_. You can build the network as follows:
->
-> 1. Open the _comments dataset_ and the _submission datasets_ (the first contains all the comments and the second cointains all the submissions) and store them in two Pandas DataFrames.
-> 2. Create three dictionaries, using the command ``dict(zip(keys,values))``, where keys and values are columns in your dataframes. The three dictionaries are the following:
->     * __comment_authors__: (_comment id_, _comment author_)
->     * __parent__:  (_comment id_ , _parent id_)
->     * __submission_authors__: (_submission id_, _submission author_)
->
-> where above I indicated the (key, value) tuples contained in each dictionary.
->
-> 3. Create a function that take as input a _comment id_ and outputs the author of its parent. The function does two things:
->     * First, it calls the dictionary __parent__, to find the _parent id_ of the comment identified by a given _comment id_. 
->     * Then, it finds the author of  _parent id_. 
->          * if the _parent id_ starts with "t1_", call the __comment_authors__ dictionary (for key=parent_id[3:])
->          * if the _parent id_ starts with "t3_", call the __submission_authors__ dictionars (for key=parent_id[3:])
->
-> where by parent_id[3:], I mean that the first three charachters of the _parent id_ (either "t1_" or "t3_" should be ingnored).
->
-> 4. Apply the function you created in step 3. to all the comment ids in your comments dataframe. Store the output in a new column, _"parent author"_, of the comments dataframe. 
-> 5. For now, we will focus on the genesis of the GME community on Reddit, before all the hype started and many new redditors jumped on board. For this reason, __filter all the comments written before Dec 31st, 2020__. Also, remove deleted users by filtering all comments whose author or parent author is equal to "[deleted]". 
-> 6. Create the weighted edge-list of your network as follows: consider all comments (after applying the filtering step above), groupby ("_author_", _"parent author"_) and count. 
-> 7. Create a [``DiGraph``](https://networkx.org/documentation/stable//reference/classes/digraph.html) using networkx. Then, use the networkx function [``add_weighted_edges_from``](https://networkx.org/documentation/networkx-1.9/reference/generated/networkx.DiGraph.add_weighted_edges_from.html) to create a weighted, directed, graph starting from the edgelist you created in step 5.
-> 8. Save the Network as a json file. 
-<!-- #endregion -->
-
 ```python
 import pandas as pd
 import networkx as nx
 import datetime
 import matplotlib.pyplot as plt
 import json
+import random
+import numpy as np
+import netwulf as nw
+```
+
+<!-- #region jp-MarkdownHeadingCollapsed=true tags=[] -->
+## Part 4: Properties of the real-world network of Redditors
+
+For this part of the assignment, consider the directed network of redditors posting about GME on r/wallstreetbets in the period included between Jan 1st and Dec 31st, 2020 (the one you built in Week 3, Part 3).
+
+<!-- #endregion -->
+
+```python
+#Loading undirected graph from Week4 part 2
+
+with open('../data/json_network.json', 'r') as infile:
+    DG = nx.readwrite.json_graph.node_link_graph(json.load(infile))
+infile.close()
+N = DG.number_of_nodes()
+L = DG.number_of_edges()
+```
+
+<div class="alert alert-block alert-danger">
+1. Compute the value of p such that the number of expected edges of the random network equals the number of edges in the redditor network (see equation 3.2 in your Network Science Book).
+</div>
+
+
+<div class="alert alert-block alert-info">
+
+<b>Note:</b> The equation (3.2) from Ch. 3 seem to be in conflict with the equation in Ch. 2 eq (2.5) which is specifically stated to apply to directed graphs. Since most of chapter 3 is revolving around undirected networks and since we had discrepencies getting the prober amount of links in our random network using these equation we will be using (2.5) instead and verifying with emperical values. </div>
+
+
+>2.What is the value of p? Compute the average value of the degree < k > (using the formula).
+
+
+First we calculate p and \<k> for the **directed network DG** using eq. (2.5) to create our random null network using p.  
+Using (2.5),  L and N (No. of edges and No. of nodes) in the directed network DG the average degree of the directed network i.e. $\left< k \right>$ which by Ch. 2.3 is equal to the average degree **in** and average degree **out**.   
+(2.5): $\left< k^{in} \right> = \left< k^{out} \right> = \frac{L}{N}$  
+Since the amount of possible distinct pairs is doubled from the undirected to the directed network i.e. in the directed network en edge from A to B doesnt equal an edge from B to A as these two edges are now distinguishable, we should simply use $p = frac{k}{N}$ to calculate the probability of pairing two random nodes.
+
+```python
+# Using (3.2) to calculate p
+# Using (3.3) to calcuae <k>
+
+p = L / ( N*(N-1) / 2)
+print("Using eq. (3.2)")
+print("Values p and <k> for redditors directed network:")
+print(f"p   = {p:.5f}")
+k = p*(N-1)
+print(f"<k> = {k:.5f}")
+print()
+
+# Using (2.5) to calculate <k>
+
+k = L/N
+p = k / N
+
+print("Using eq. (2.5) and p = k/n")
+print("Values p and <k> for redditors directed network:")
+print(f"p   = {p:.5f}")
+print(f"<k> = {k:.5f}")
+print()
+```
+
+Later we will calcuate \<k> empirically for both networks.
+
+
+> 2. [continued] Create a Random network with the same number of nodes as the redditor networks, and p as computed above. Generate a random network by linking nodes in every possible pair with probability p.
+
+
+Creating a null model using N number of nodes to simply generate a network with the nodes {1,2,3 ... N}.  
+Self loops are allowed and (A, B), (B, A) are two distinguishable pairs because the graphs are directed.
+
+```python
+# Building null DiGraph network with nodes in {1,2,3, ..., N}
+
+null = nx.DiGraph()
+null.add_nodes_from(list(range(1,N+1)))
+
+# Generate edges list randomly
+
+np.random.seed(2460)    
+edgs = [(u,v) for u in list(range(1,N+1)) for v in list(*np.where(np.random.uniform(size=N) < p))] # Add "if v != u" if no self_loops are to be allow
+null.add_edges_from(edgs)
 ```
 
 ```python
-comments = pd.read_csv("wsb_comments_formatted.csv")
-submissions = pd.read_csv("WSB_w1.csv")
+# Calculating emperical values for <k>
+
+avg_degree_of_DG = np.mean([d for n, d in DG.in_degree()])
+avg_degree_of_null = np.mean([d for n, d in null.in_degree()])
+print(f"Avg degree 'k' of reditors directed network: {avg_degree_of_DG:.3f}")
+print(f"Avg degree 'k' of null network: {avg_degree_of_null:.3f}")
+```
+
+> 3. Visualize the Redditors Network and the Random Network. Comment on the differences between the two.
+
+```python
+# Convert DiGraph DG to undirected Graph G reciprocal = True
+G = DG.to_undirected(True, False)
+Gnull = null.to_undirected(True, False)
 
 
 ```
 
 ```python
-comment_authors = dict(zip(comments.id, comments.author))
-parent = dict(zip(comments.id, comments.parent_id))
-submission_authors = dict(zip(submissions.id, submissions.author))
+
+# Creates lists of self loop edges and removes these edges
+
+G_loops = list(nx.selfloop_edges(G))
+G.remove_edges_from(G_loops)
+null_loops = list(nx.selfloop_edges(null))
+G.remove_edges_from(null_loops)
+
+# Creates lists of isolated nodes and removes these
+
+G_isolated = [(n) for n in list(G.nodes) if G.degree[n] == 0]
+G.remove_nodes_from(G_isolated)
+null_isolated = [(n) for n in list(null.nodes) if null.degree[n] == 0]
+null.remove_nodes_from(null_isolated)
+
+
 ```
 
 ```python
-def outputAuthor(commentIdKey, 
-                 commentAuthorsDict = comment_authors,
-                 parentDict = parent,
-                 submissionAuthorsDict = submission_authors):
-    
-    parentIdValue = parentDict.get(commentIdKey)
-    if parentIdValue[1] == "1":
-        return commentAuthorsDict.get(parentIdValue[3:])
-    else:
-        return submissionAuthorsDict.get(parentIdValue[3:])
+stylized_network, config = nw.visualize(DG)
 
-outputAuthor('fkqnewk')
+fig, ax = nw.draw_netwulf(stylized_network)
+plt.show()
 ```
 
 ```python
-# Adding parent authors to comments data
-comments["parent_author"] = comments.apply(lambda row : outputAuthor(row["id"]), axis=1)
+
+#network_properties = nw.tools.bind_properties_to_network(network,
+                                         network_properties,
+                                         bind_node_positions=True,
+                                         bind_node_color=True,
+                                         bind_node_radius=True,
+                                         bind_node_stroke_color=True,
+                                         bind_node_stroke_width=True,
+                                         bind_link_width=True,
+                                         bind_link_color=True,
+                                         bind_link_alpha=True)
+
+#nw.tools.draw_netwulf(network_properties,
+                           fig=None,
+                           ax=None,
+                           figsize=None,
+                           draw_links=True,
+                           draw_nodes=True,
+                           link_zorder=-1,
+                           node_zorder=1000)
 ```
 
 ```python
-# Filtering date and dropping deleted submitters and parents
-date = datetime.datetime(year=2020, month=12, day=31)
-comments = comments.drop(labels = comments[comments["author"] ==  "[deleted]"].index)
-comments = comments.drop(labels = comments[comments["parent_author"] ==  "[deleted]"].index)
-comments = comments.drop(labels = comments[comments["created"] <  date.timestamp()].index)
+temp = nx.Graph()
+snodes = [n for n in list(random.sample(DG.nodes, 100))]
+temp.add_nodes_from(snodes)
+sedges = [(u,v) for u in snodes for v in list(*np.where(np.random.uniform(size=len(snodes)) < p))]
+temp.add_edges_from(sedges)
+
 ```
 
 ```python
-edgeList = comments.groupby(by = ["author", "parent_author"],
-                            as_index=False).count()
-
-edgeList = pd.DataFrame(edgeList, columns=["author", "parent_author", "created_utc"])
-edgeList.rename(columns={"author" : "source", "parent_author" : "target", "created_utc" : "weight"}, inplace=True)
-#edgeList = edgeList.sample(250)
-#G = nx.from_pandas_edgelist(edgeList)
-#                            source="author",
-#                            target="parent_author")
-#                            edge_attr="created_utc")
+# Visualize subgraph of redditors directed network
+k = 10000
+sampled_nodes = random.sample(DG.nodes, k)
+sampled_graph = DG.subgraph(sampled_nodes)
 ```
 
 ```python
-DG = nx.DiGraph()
-DG.add_weighted_edges_from(edgeList.values)
+stylized_network, config = nw.visualize(sampled_graph)
+
+# Reproduce the visualisation
+fig, ax = nw.draw_netwulf(stylized_network)
+plt.show()
 ```
 
 ```python
-dataJson = nx.readwrite.json_graph.node_link_data(DG)
-with open('json_network.json', 'w') as outfile:
-    json.dump(dataJson, outfile)
+#Use previous style and config and start the API
+nw.visualize(G, config=config)
+```
+
+```python
+#Can be used to create a null network with same node names
+#null = nx.classes.function.create_empty_copy(DG).to_undirected()
+```
+
+```python
+#k = 100
+#sampled_nodes = random.sample(DG.nodes, k)
+#sampled_graph = DG.subgraph(sampled_nodes)
 ```
 
 ```python
 fig, ax = plt.subplots(figsize=(16,16))
 #edge_collection = nx.draw_networkx_edges(DG, ax=ax)
 #edge_labels = nx.draw_networkx_labels(DG, ax=ax)
-nx.draw(DG, with_labels=True)
+#nx.draw(sampled_graph, with_labels=True)
 ```
 
 # Part 4: Preliminary analysis of the GME redditors network
