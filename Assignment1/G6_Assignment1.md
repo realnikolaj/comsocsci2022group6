@@ -284,6 +284,11 @@ Graph d) Consists of 1 node of degree 1, 2 nodes of degree 2, one of degree 3 an
 ## Exercise 2.3 Graph representation
 <!-- #endregion -->
 
+```python
+import networkx as nx
+import matplotlib.pyplot as plt
+```
+
 Construct for the networks (a) and (b) in Imade 2.20:
 - Undirected graph of 6 nodes and 7 links.
 - Directed graph of 6 nodes and 8 directed links.
@@ -329,11 +334,11 @@ print(clustering_coefficient_undirected)
 
 ### If you switch the labels of nodes 5 and 6 in Image 2.20a, how does that move change the adjacency matrix? And the link list?
 
-If you switch the labels of nodes 5 and 6, you swap the 5 column with the 6 column, and the 5 row with the 6 row. For the linked list, you swap out every instance of 6 with 5
+If you swithc the labels of nodes 5 and 6, you swap the 5 column with the 6 column, and the 5 row with the 6 row. For the linked list, you swap out every instance of 6 with 5
 
 ### What kind of information can you not infer from the link list representation of the network that you can infer from the adjacency matrix?
 
-You can not detect nodes that are disconnected from the rest of the graph in the link list, but you can detect disconnected nodes from the adjacency matrix
+you can not detect nodes that are disconnected from the rest of the graph in the link list, but you can detect disconnected nodes from the adjacency matrix
 
 
 ### In the (a) network, how many paths (with possible repetition of nodes and links) of length 3 exist starting from node 1 and ending at node 3? And in (b)?
@@ -351,6 +356,8 @@ For network b, no path exsists
 ### Construct its adjacency matrix. Why is it a block-diagonal matrix?
 
 ```python
+import networkx as nx
+
 undirected_graph = nx.Graph()
 undirected_graph.add_nodes_from([x for x in range(1, 12)])
 undirected_graph.add_edges_from(
@@ -370,19 +377,19 @@ Every matrix is block-diagonal with atleast one block. Every block represents on
 purple_projection = nx.bipartite.projected_graph(
     undirected_graph, [1, 2, 3, 4, 5, 6])
 adjacency_matrix_purple = nx.adjacency_matrix(purple_projection).todense()
-print("Adjacency matrix purple projection: \n", adjacency_matrix_purple)
+print("Adjacecny matrix purple projection: \n", adjacency_matrix_purple)
 
 green_projection = nx.bipartite.projected_graph(
     undirected_graph, [7, 8, 9, 10, 11])
 adjacency_matrix_green= nx.adjacency_matrix(green_projection).todense()
-print("\nAdjacency matrix green projection: \n", adjacency_matrix_green)
+print("\nAdjacecny matrix green projection: \n", adjacency_matrix_green)
 ```
 
 ### Calculate the average degree of the purple nodes and the average degree of the green nodes in the bipartite network.
 
 ```python
 def calculateAverageDegree(graph, nodes):
-    n = len(graph)
+    n = len(nodes)
     sumOfDegrees = 0
     for node in nodes:
         sumOfDegrees += graph.degree[node]
@@ -400,19 +407,14 @@ calculateAverageDegree(undirected_graph, [7,8,9,10,11])
 ### Calculate the average degree in each of the two network projections. Is it surprising that the values are different from those obtained in point (c)?
 
 ```python
-nx.draw(purple_projection, with_labels=True, font_weight='bold')
-plt.show()
-
 calculateAverageDegree(purple_projection, [1,2,3,4,5,6])
 ```
 
 ```python
-nx.draw(green_projection, with_labels=True, font_weight='bold')
-plt.show()
 calculateAverageDegree(green_projection,  [7,8,9,10,11])
 ```
 
-It is not suprising that the values are different from those abained in point c. From the two graphs above, it is clear that the bottom graph has a lower amount of average degree than the top one.
+It is not suprising that the values are different from those abained in point c. The nodes in a projection does not neccesarrily have the same degree as the nodes in the network, and that is not the case here either.
 
 
 ### What is the maximum number of links Lmax the network can have?
@@ -424,7 +426,8 @@ Maximum numer of links is N1 * N2. Every node in N1 can have a link to every nod
 
 
 
-Maximum links non-bipartite network of size N = N1 + N2 = N(N-1)/2
+Maximum links in a non-bipartite network = N(N-1)/2  
+We subtract the maximum number of links in a bipartite network to find how many links can not occur, and that gives us the following equation:
 
 (N(N-1)/2) - (N1*N2)
 
@@ -442,20 +445,21 @@ This will lead to a sparse graph, as a larger difference in N1 compared to N2 le
 ### Find an expression connecting N1, N2 and the average degree for the two sets in the bipartite network, 〈k1〉 and 〈k2〉.
 
 
-Sum of degrees in set 1 = s1, and sum of degrees in set 2  = s2. since it is a bipartite network, they must be the same.
+Sum of degrees in set 1 = s1, and sum of degrees in set 2  = s2. since it is a bipartite network, they must be the same. This leads to the following equation:
 
-s1=s2=L.
-=>
-k1=s1/N1 and k2=s2/N2
-=>
+s1=s2=L.  
+=>  
+k1=s1/N1 and k2=s2/N2  
+=>  
 N1k1=N2k2
 
-<!-- #region jp-MarkdownHeadingCollapsed=true tags=[] -->
+
+
 ## Part 4: Properties of the real-world network of Redditors
 
 For this part of the assignment, consider the directed network of redditors posting about GME on r/wallstreetbets in the period included between Jan 1st and Dec 31st, 2020 (the one you built in Week 3, Part 3).
 
-<!-- #endregion -->
+
 
 ```python
 #Loading undirected graph from Week4 part 2
