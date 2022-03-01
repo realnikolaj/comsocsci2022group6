@@ -139,7 +139,7 @@ print("\nAdjacecny matrix green projection: \n", adjacency_matrix_green)
 
 ```python
 def calculateAverageDegree(graph, nodes):
-    n = len(graph)
+    n = len(nodes)
     sumOfDegrees = 0
     for node in nodes:
         sumOfDegrees += graph.degree[node]
@@ -157,19 +157,14 @@ calculateAverageDegree(undirected_graph, [7,8,9,10,11])
 ### Calculate the average degree in each of the two network projections. Is it surprising that the values are different from those obtained in point (c)?
 
 ```python
-nx.draw(purple_projection, with_labels=True, font_weight='bold')
-plt.show()
-
 calculateAverageDegree(purple_projection, [1,2,3,4,5,6])
 ```
 
 ```python
-nx.draw(green_projection, with_labels=True, font_weight='bold')
-plt.show()
 calculateAverageDegree(green_projection,  [7,8,9,10,11])
 ```
 
-It is not suprising that the values are different from those abained in point c. From the two graphs above, it is clear that the bottom graph has a lower amount of average degree than the top one.
+It is not suprising that the values are different from those abained in point c. The nodes in a projection does not neccesarrily have the same degree as the nodes in the network, and that is not the case here either.
 
 
 ### What is the maximum number of links Lmax the network can have?
@@ -181,7 +176,8 @@ Maximum numer of links is N1 * N2. Every node in N1 can have a link to every nod
 
 
 
-Maximum links non-bipartite network of size N = N1 + N2 = N(N-1)/2
+Maximum links in a non-bipartite network = N(N-1)/2  
+We subtract the maximum number of links in a bipartite network to find how many links can not occur, and that gives us the following equation:
 
 (N(N-1)/2) - (N1*N2)
 
@@ -199,12 +195,12 @@ This will lead to a sparse graph, as a larger difference in N1 compared to N2 le
 ### Find an expression connecting N1, N2 and the average degree for the two sets in the bipartite network, 〈k1〉 and 〈k2〉.
 
 
-Sum of degrees in set 1 = s1, and sum of degrees in set 2  = s2. since it is a bipartite network, they must be the same.
+Sum of degrees in set 1 = s1, and sum of degrees in set 2  = s2. since it is a bipartite network, they must be the same. This leads to the following equation:
 
-s1=s2=L.
-=>
-k1=s1/N1 and k2=s2/N2
-=>
+s1=s2=L.  
+=>  
+k1=s1/N1 and k2=s2/N2  
+=>  
 N1k1=N2k2
 
 ```python
