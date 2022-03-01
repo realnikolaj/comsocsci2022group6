@@ -118,14 +118,12 @@ print(f"Avg degree 'k' of null network: {avg_degree_of_null:.3f}")
 
 ```python
 # Convert DiGraph DG to undirected Graph G reciprocal = True
+
 G = DG.to_undirected(True, False)
 Gnull = null.to_undirected(True, False)
-
-
 ```
 
 ```python
-
 # Creates lists of self loop edges and removes these edges
 
 G_loops = list(nx.selfloop_edges(G))
@@ -144,62 +142,103 @@ null.remove_nodes_from(null_isolated)
 ```
 
 ```python
-stylized_network, config = nw.visualize(DG)
+# Placeholder cell for visualizing entire network
+# Don't run this, it is slow and cluttered, run next cell which uses
+# a sampled subgrap
 
-fig, ax = nw.draw_netwulf(stylized_network)
-plt.show()
+
+
+#stylized_network, config = nw.visualize(DG)
+#fig, ax = nw.draw_netwulf(stylized_network)
+#plt.show()
 ```
 
 ```python
+# Visualize a subgraph of redditors directed network
 
-#network_properties = nw.tools.bind_properties_to_network(network,
-                                         network_properties,
-                                         bind_node_positions=True,
-                                         bind_node_color=True,
-                                         bind_node_radius=True,
-                                         bind_node_stroke_color=True,
-                                         bind_node_stroke_width=True,
-                                         bind_link_width=True,
-                                         bind_link_color=True,
-                                         bind_link_alpha=True)
-
-#nw.tools.draw_netwulf(network_properties,
-                           fig=None,
-                           ax=None,
-                           figsize=None,
-                           draw_links=True,
-                           draw_nodes=True,
-                           link_zorder=-1,
-                           node_zorder=1000)
-```
-
-```python
-temp = nx.Graph()
-snodes = [n for n in list(random.sample(DG.nodes, 100))]
-temp.add_nodes_from(snodes)
-sedges = [(u,v) for u in snodes for v in list(*np.where(np.random.uniform(size=len(snodes)) < p))]
-temp.add_edges_from(sedges)
-
-```
-
-```python
-# Visualize subgraph of redditors directed network
-k = 10000
+k = 5000
 sampled_nodes = random.sample(DG.nodes, k)
 sampled_graph = DG.subgraph(sampled_nodes)
+stylized_redditors_network, config = nw.visualize(sampled_graph)
 ```
 
 ```python
+# Visualize a subgraph of the random null directed network
+
+sampled_nodes = random.sample(null.nodes, k)
+sampled_graph = null.subgraph(sampled_nodes)
+stylized_null_network, config = nw.visualize(sampled_graph)
+
+```
+
+```python
+# Sets up config loading from netwulf API and plots
+
 stylized_network, config = nw.visualize(sampled_graph)
 
 # Reproduce the visualisation
-fig, ax = nw.draw_netwulf(stylized_network)
-plt.show()
+#fig, ax = nw.draw_netwulf(stylized_network)
+#plt.show()
+```
+
+# Part 4.2 Clustering:
+## Compare the clustering coefficient in the Redditors Network and its random counterpart.
+
+>Compute the clustering coefficient for all nodes in the random network, using the formula 2.15 in your book.
+
+
+
+(2.15) $C_{ı} = \frac{2L_{i}}{k_{i}\left(k_{i}-1\right)}$
+
+```python
+# Computes the list and prints a few non-zero values
+
+c_coef = list(nx.clustering(null).values())
+sampls = random.sample([c_coef[i] for i in range(1, N+1) if c_coef[i] > 0], 5)
+print('Randomely selected non-zero clustering coefficient values')
+print(" c_r =", *(f"[{i:.3f}]" for i in sampls))
+```
+
+>Compute the average clustering across nodes of the random network. Is it consistent with the analytical prediction (network science book equation 3.21)?
+
+
+To calculate degree of clustering of the whole network we find the the average clustering coefficient \<k> given by eq. (2.16) below.  
+(2.16) $\left< C \right> = \frac{1}{N} \sum_{i=1}^{N} C_{i}$
+
+```python
+# Average clustering coefficient for the null network
+
+null_avg_c = np.mean(c_coef)
+print(f'<C> of null network = {null_avg_c:.3g}') 
 ```
 
 ```python
+# Simply verifying using the Networkx API's build-in function
+
+#api_null_c = nx.average_clustering(null)
+#print(f'<C> of null network using build-in method = {api_null_c:.3g}') 
+```
+
+>Compute the average clustering coefficient for the Redditors network. How does it compare to its random counterpart? Is it something you would expect? Why?
+
+```python
+# Average clustering coefficient for the redditors directed network
+
+DG_avg_c = np.mean(list(nx.clustering(DG).values()))
+print(f'<C> of redditors network = {DG_avg_c:.3g}') 
+```
+
+We observe a large difference in the degree of clustering between the redditors network and the random null network.  
+Several reasons for this difference could be thought of:
+ 1. Users posting on reddit or submitting to posts all have various backgrounds, specifically considering different political orientation, belief systems w.r.t. stock market analysis and investments which could result in groups of threads with common submitters/posters i.e. various users might have certain tendencies to comment on certain types of posts which in turn could be posted by the same poster.
+ 2. Reddit is a social network and posters and submitters are not anonymous therefore users might be following other users and posting more frequently to a specific subset of users.
+ 3. Certain topics especially meme-stocks such as GME, AMC, BB etc. might attract certain groups of redditors and when we condition the entire network of redditors to only return GME specific comments submitted in a single subreddit out of millions of subreddits it is expected that niche groupings of threads containing common submitters are more likely which results in a larger spread in the degree distribution $p_{k}$ of the redditor network but maintains the same average degree $\left<k\right>$ e.g. when we sample some spefic redditors post history some redditors might engage more on particular discussions and some might simply post to submissions that doesn't gain a lot of traction i.e. to smaller threads.
+ 4. Follow up on degree disitribution.  In this analysis we did not consider the degree distribution of the redditors network. Using a uniform distribution to sample edges in the random network might not capture the actual distribution of closely- and not so closely related redditors and basically averages out on the typical redditor and its attributes.
+**Conlusion: Using estimated values to generate random edges between nodes in our null network misses most if not all of the mentioned dynamics above. Dynamics that portray different caracteristics for various redditors which in turn results in closer relations between some redditors and some redditors are more isolated. The random network simply links redditors with no underlying mechanism other than the probability parameter p.**
+
+```python
 #Use previous style and config and start the API
-nw.visualize(G, config=config)
+#nw.visualize(G, config=config)
 ```
 
 ```python
@@ -214,7 +253,7 @@ nw.visualize(G, config=config)
 ```
 
 ```python
-fig, ax = plt.subplots(figsize=(16,16))
+#fig, ax = plt.subplots(figsize=(16,16))
 #edge_collection = nx.draw_networkx_edges(DG, ax=ax)
 #edge_labels = nx.draw_networkx_labels(DG, ax=ax)
 #nx.draw(sampled_graph, with_labels=True)
@@ -243,3 +282,6 @@ We begin with a preliminary analysis of the network.
 ```python
 
 ```
+
+
+
