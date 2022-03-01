@@ -8,16 +8,18 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.13.7
   kernelspec:
-    display_name: Python 3 (ipykernel)
+    display_name: Python [conda env:comsocsci2022]
     language: python
-    name: python3
+    name: conda-env-comsocsci2022-py
 ---
 
 # Assignment 1
 ## Group 6
 > s183930 - Nikolaj S. Povlsen
-> 
-> 
+
+> s184208 - Steffen Holm Cordes
+
+> s217176 - Johan Fredrik Bjørnland
 
 
 <!-- #region -->
@@ -111,6 +113,7 @@ import json
 import netwulf as nw
 from scipy import stats
 import networkx as nx
+import random
 ```
 
 ```python
@@ -325,11 +328,11 @@ print(clustering_coefficient_undirected)
 
 ### If you switch the labels of nodes 5 and 6 in Image 2.20a, how does that move change the adjacency matrix? And the link list?
 
-If you swithc the labels of nodes 5 and 6, you swap the 5 column with the 6 column, and the 5 row with the 6 row. For the linked list, you swap out every instance of 6 with 5
+If you switch the labels of nodes 5 and 6, you swap the 5 column with the 6 column, and the 5 row with the 6 row. For the linked list, you swap out every instance of 6 with 5
 
 ### What kind of information can you not infer from the link list representation of the network that you can infer from the adjacency matrix?
 
-you can not detect nodes that are disconnected from the rest of the graph in the link list, but you can detect disconnected nodes from the adjacency matrix
+You can not detect nodes that are disconnected from the rest of the graph in the link list, but you can detect disconnected nodes from the adjacency matrix
 
 
 ### In the (a) network, how many paths (with possible repetition of nodes and links) of length 3 exist starting from node 1 and ending at node 3? And in (b)?
@@ -366,12 +369,12 @@ Every matrix is block-diagonal with atleast one block. Every block represents on
 purple_projection = nx.bipartite.projected_graph(
     undirected_graph, [1, 2, 3, 4, 5, 6])
 adjacency_matrix_purple = nx.adjacency_matrix(purple_projection).todense()
-print("Adjacecny matrix purple projection: \n", adjacency_matrix_purple)
+print("Adjacency matrix purple projection: \n", adjacency_matrix_purple)
 
 green_projection = nx.bipartite.projected_graph(
     undirected_graph, [7, 8, 9, 10, 11])
 adjacency_matrix_green= nx.adjacency_matrix(green_projection).todense()
-print("\nAdjacecny matrix green projection: \n", adjacency_matrix_green)
+print("\nAdjacency matrix green projection: \n", adjacency_matrix_green)
 ```
 
 ### Calculate the average degree of the purple nodes and the average degree of the green nodes in the bipartite network.
