@@ -123,10 +123,16 @@ Describe similarities and differences between the stocks.
 
 
 
+The top 5 TF terms are mostly about generic stock trading terms like "stock", "earnings" and their stock ticker. The information from the top 5 TF terms do not reveal any noticeable differences between the stocks.
+
+
 Why aren't the TFs not necessarily a good description of the stocks?
 
 
 
+
+
+Because TF produces the most frequent words in a document, these will most often also be generic terms that appear often in the english language pertaining to the subject.
 
 
 Next, we calculate IDF for every word. 
@@ -152,10 +158,8 @@ IDFterms = pickle.load(open('../data/IDFterms.pickle', 'rb'))
 What base logarithm did you use? Is that important?
 
 
-!!!!!!!!!!!!!Rewrite!!!!!!!!!!!!!!!!!!!!!
-
 Using log means that general words used in a lot of other documents will not count as much, so we can compare high frequency terms with low frequency.
-Log10 is used because it will reduce the impact of the small number of documents that a term appears in by a factor of of a power of 10.
+Log10 is used because it will reduce the impact of the small number of documents that a term appears in by a factor of of a power of 10. It is not that important which base logarithm is being used, but it will scale the actual numbers e.g. Log10 will produce much smaller numbers than Log2.
 
 
 5. We're ready to calculate TF-IDF. Do that for the __5 stock of your choice__. 
@@ -195,6 +199,8 @@ For the top 10 TF words for the Tesla stock, we see a lot of non-descriptive wor
 
 We also see a mention of Citron Research for the Palantir stock TF-IDF, who announced they would initiate a short position on Palantir in late 2020.
 
+IDF makes the top terms more informative, because it takes into account how many other documents contain that term and therefore gives a measure of specificity. This is good because this is exactly the opposite what we saw with the generic words produced by TF and if these words are mentioned across many documents their TF-IDF score will be lowered, so more unique but still frequent terms gets a higher score.
+
 
 6. Visualize the results in a Wordcloud and comment your results (follow the instrutions in Week 6, Exercise 4).
 
@@ -210,4 +216,4 @@ for stock in top5_stocklist:
     plt.show()
 ```
 
-!!!!!!!!!!!! Comment on results !!!!!!!!!!!!
+We see that the wordcloud is a powerful representation of the TF-IDF terms to identify important terms relatin to the stocks but also associated terms. E.g. Virgin Space is often compared to Maxar Technologies, Gamestop to Blockbuster and Zoom is often compared to Slack. This gives the reader an interesting and visual way to investigate terms relating to a topic.
