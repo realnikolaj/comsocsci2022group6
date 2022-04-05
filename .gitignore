@@ -1,3 +1,5 @@
 *.ipynb
 /venv
 /.ipynb_checkpoints
+/comsci-env
+*.ipynb_checkpoints
