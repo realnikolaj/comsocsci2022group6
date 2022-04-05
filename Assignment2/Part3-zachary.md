@@ -30,7 +30,6 @@ import numpy as np
 import netwulf as nw
 import random
 import copy
-
 ```
 
 ## Part 3 Communities for the Zachary Karate Club Network
@@ -45,8 +44,16 @@ and will automatically colorize different groups
 '''
 G = nx.karate_club_graph()
 N = G.number_of_nodes()
-# Gets the set of node attributes i.e 'Mr. Hi' and 'Officer'
-clubs = nx.attr_matrix(G, node_attr='club')[1] 
+
+clubs = nx.attr_matrix(G, node_attr='club')[1]  # Gets the set of node attributes i.e 'Mr. Hi' and 'Officer'
+```
+
+```python
+clubs
+```
+
+```python
+G.nodes(data=True)
 ```
 
 ```python
@@ -82,33 +89,46 @@ The generalized version below measure the same statistic for a full graph by sum
 def modularity(network):
     '''
     requires attribute which can be used to distinguish/partition nodes.
+    This function also returns the communities which is used to evaluate the result againts..
+    the built-in networkx modularity function
     '''
-    partitions = [{n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == 'Mr. Hi'}, 
-                  {n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == 'Officer'}]
+    partitions = list()
+    no_of_groups = len(nx.attr_matrix(network, node_attr='club')[1])
+    for _community in range(no_of_groups):
+        partitions.append({n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == _community})
+    #partitions = [{n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == 'Mr. Hi'}, 
+                  #{n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == 'Officer'}]
+    
     k = dict(G.degree)
     sumdeg = sum(k.values())
     L = sumdeg / 2
     norm = 1 / sumdeg ** 2
-    L_c = np.zeros(2)
-    sumk = np.zeros(2)
+    L_c = np.zeros(no_of_groups)
+    sumk = np.zeros(no_of_groups)
     for c in range(len(partitions)):
         parts = set(partitions[c])
         L_c[c] = sum([1 for u, v in G.edges(parts) if v in parts])
         sumk[c] = sum([k[u] for u in parts])
-    return sum(L_c / L - (sumk ** 2) * norm)
+    return sum(L_c / L - (sumk ** 2) * norm), partitions
 ```
 
 4. > Compute the modularity of the Karate club split partitioning using the function you just wrote. Note: the Karate club split partitioning is avilable as a node attribute, called "club".
 
 ```python
-print(f'Modularity of Zachary club network: {modularity(G):.2f}')
+'''
+This code changes the club strings into integers.
+It is needed to generalize the modularity function above to accomodate the more common..
+attribute type of integers, which is used later.
+'''
+for _node in G.nodes: # Change string attribute to int
+    G.nodes[_node]['club'] = (0 if G.nodes[_node]['club'] == 'Mr. Hi' else 1)
+    
+print(f'Modularity of Zachary club network: {modularity(G)[0]:.2f}')
 ```
 
 ```python
 # Verify with networkX modularity function
-partitions = [{n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == 'Mr. Hi'}, 
-                  {n for n in range(G.number_of_nodes()) if G.nodes[n]['club'] == 'Officer'}]
-print(f'[Built-in networkx function] Modularity of Zachary club network: {nx.algorithms.community.quality.modularity(G, partitions, weight="club"):.2f}')
+print(f'[Built-in networkx function] Modularity of Zachary club network: {nx.algorithms.community.quality.modularity(G, modularity(G)[1], weight="club"):.2f}')
 ```
 
 5. > **Randomization experiment**  
@@ -203,37 +223,30 @@ This experiment is very important to support our hypothesis that there is in fac
 11. >Use the Python Louvain-algorithm implementation to find communities in this graph. Report the value of modularity found by the algorithm. Is it higher or lower than what you found above for the club split? What does this comparison reveal?
 
 ```python
+'''
+This code uses the python_louvain package implementing the algorithm.
+It returns a partitioning table/dict formatted as {node: community}, which is different..
+than required by the modularity functions used earlier. 
+The returned table is then converted in to a nested list containing individual lists of all..
+member nodes of a specific community, which is suitable for the modularity functions.
+For our own custom function we first assign node attributes with values corresponding to the
+assigned community provided by the Python Louvain algorithm
+'''
+
 louvain_partition = community_louvain.best_partition(G) # Creates dictionary {node: community}
 
 louvain_set_of_communities = set(louvain_partition.values()) # Creates an iterable list over the found communities
+model1 = G.copy()
+for _node in model1.nodes(): # Assigns commnunity attributes to our configuration model based on P. Louvain partitioning
+    model1.nodes[_node]['club'] = louvain_partition[_node]
+
+print(f'Modularity of Louvain partition: {modularity(model1)[0]:.2f}')
+
 louvain_communities = list()
-for _community in louvain_set_of_communities:
-    #add node to corresponding community and append the communities to a list of communities
+for _community in louvain_set_of_communities:  #add node to corresponding community and append the communities to a list of communities
     louvain_communities.append({key for key in louvain_partition.keys() if louvain_partition.get(key) == _community})
 
-    
-community_louvain.modularity(louvain_partitition, G)
-print(f'Modularity of Zachary club network: {nx.algorithms.community.modularity(G, louvain_communities):.2f}')
-```
-
-```python
-#[key for key in louvain_partition.keys()]
-```
-
-```python
-#partitions
-```
-
-```python
-louvain_partitition.items()
-```
-
-```python
-louvain_communities
-```
-
-```python
-set(louvain_partitition.values())
+print(f'[Built-in networkx function] Modularity of Zachary club network: {nx.algorithms.community.modularity(model1, louvain_communities):.2f}')
 ```
 
 12. >Compare the communities found by the Louvain algorithm with the club split partitioning by creating a matrix D with dimension (2 times A), where A is the number of communities found by Louvain. We set entry D(i,j) to be the number of nodes that community i has in common with group split j. The matrix D is what we call a confusion matrix. Use the confusion matrix to explain how well the communities you've detected correspond to the club split partitioning.
