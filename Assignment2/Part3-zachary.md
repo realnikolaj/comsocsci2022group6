@@ -30,11 +30,16 @@ import numpy as np
 import netwulf as nw
 import random
 import copy
+import scipy.stats as stats
+import statsmodels.api as sm
 ```
 
 ## Part 3 Communities for the Zachary Karate Club Network
 1. > Visualize the Zachary Karate Club network as a graph
  > - Set the color of each node based on the club split.
+
+
+#### 1. Visualize Zachary Karate Club Network
 
 ```python
 '''
@@ -49,19 +54,16 @@ clubs = nx.attr_matrix(G, node_attr='club')[1]  # Gets the set of node attribute
 ```
 
 ```python
-clubs
-```
-
-```python
-G.nodes(data=True)
-```
-
-```python
 #stylized_club_network, config = nw.visualize(G) 
 #nw.save("../config/assignment2/p3.json", stylized_club_network, config) # Save the config as p3clubnet.json
 ```
 
-<img src="../plots/assignment2/Part3_club_network.png" width="800" height="400">
+\begin{figure}
+    <img src="../plots/assignment2/Part3_club_network.png" width="800" height="400">
+\label{fig1}\tag{Figure 1}\\
+\end{figure}
+   
+
 
 
 2. > Write a function to compute the modularity of a graph partitioning (use equation 9.12 in the book)
@@ -83,11 +85,12 @@ The generalized version below measure the same statistic for a full graph by sum
 \end{align}
 
 
-*2. Writes the function to compute modularity:*
+#### 2. Writes the function to compute modularity:
 
 ```python
 def modularity(network):
     '''
+    This function implements the modularity parameter.
     requires attribute which can be used to distinguish/partition nodes.
     This function also returns the communities which is used to evaluate the result againts..
     the built-in networkx modularity function
@@ -112,6 +115,7 @@ def modularity(network):
     return sum(L_c / L - (sumk ** 2) * norm), partitions
 ```
 
+***
 4. > Compute the modularity of the Karate club split partitioning using the function you just wrote. Note: the Karate club split partitioning is avilable as a node attribute, called "club".
 
 ```python
@@ -121,16 +125,15 @@ It is needed to generalize the modularity function above to accomodate the more 
 attribute type of integers, which is used later.
 '''
 for _node in G.nodes: # Change string attribute to int
-    G.nodes[_node]['club'] = (0 if G.nodes[_node]['club'] == 'Mr. Hi' else 1)
-    
-print(f'Modularity of Zachary club network: {modularity(G)[0]:.2f}')
+    G.nodes[_node]['club'] = (0 if G.nodes[_node]['club'] == 'Mr. Hi' else 1)   
+print(f'-------------| Results |------------- \n',
+      f'Modularity of Zachary club network: \n',
+      f'{modularity(G)[0]:.2f} \n',
+      f'[Built-in networkx function] Modularity of Zachary club network: \n',
+      f'{nx.algorithms.community.quality.modularity(G, modularity(G)[1], weight="club"):.2f} \n')
 ```
 
-```python
-# Verify with networkX modularity function
-print(f'[Built-in networkx function] Modularity of Zachary club network: {nx.algorithms.community.quality.modularity(G, modularity(G)[1], weight="club"):.2f}')
-```
-
+***
 5. > **Randomization experiment**  
 >We will now perform a small randomization experiment to assess if the modularity you just computed is statitically different from 0. To do so, we will implement a configuration model. In short, we will create a new network, such that each node has the same degree as in the original network, but different connections. Here is how the algorithm works.  
 
@@ -141,55 +144,62 @@ c. If none of edges (u,y) and (x,v) exists already, add them to the network and 
 Repeat steps b. and c. to achieve at least N swaps (I suggest N to be larger than the number of edges).  
 
 ```python
-model = G.copy() # Copy G
-```
+'''
+We set a seed in this when creating the configuration to help with reprocudability.
+The function double_edge_swap from networkx implements the Algorithm above.
+'''
 
-def des(network, swaps):
-    _swaps = 0
-    while _swaps != swaps:
-        for u,v in model.edges:
-            x,y = G.edges
-            while 
-            
-        _swap += 1
-
-```python
 seed = random.seed()
 L = G.number_of_edges()
-model = nx.algorithms.double_edge_swap(model, nswap=L+10, max_tries=1000, seed=seed)
+model = nx.algorithms.double_edge_swap(copy.deepcopy(G), nswap=L+10, max_tries=1000, seed=seed)
 ```
 
+***
 6. >Double check that your algorithm works well, by showing that the degree of nodes in the original network and the new 'randomized' version of the network are the same.
 
 
 ##### Comparing the two models' node degree 
 
 ```python
-print('Degree lists are identical (True/False):', list(model.degree) == list(G.degree) )
+print(f'-------------| Results |------------- \n',
+      f'Degree lists are identical (True/False):', list(model.degree) == list(G.degree) )
 ```
 
+***
 7. > Create 1000 randomized version of the Karate Club network using the double edge swap algorithm you wrote in step 5. For each of them, compute the modularity of the "club" split and store it in a list.
 
 ```python
+'''
+This code holds the 1000 randomized configuration models in a nested list.
+The 'seed=random.seed()' parameter and argument is there to ensure each new model is created independently 
+from different seeds.
+The list variable 'modularity' holds the modularities computed from each model.
+'''
 modeldict = list(range(1000))
-modularities = copy.copy(modeldict)
+modularities = list(range(1000))
 
-for model in modeldict:
-        modeldict[model] = nx.algorithms.double_edge_swap(G, nswap=L+10, max_tries=1200, seed=random.seed())
-        modularities[model] = modularity(modeldict[model])
+for _model in modeldict:
+        modeldict[_model] = nx.algorithms.double_edge_swap(copy.deepcopy(G), nswap=L+10, max_tries=1200, seed=np.random)
+        modularities[_model] = modularity(modeldict[_model])[0]
 ```
 
+***
 8. >Compute the average and standard deviation of the modularity for the random network.
 
 
 ##### Using numpy
 
 ```python
-print(f'Average modularity of 1000 random networks: \n {np.mean(modularities):.2f} \n',
+'''
+Numpy function numpy.mean and numpy.std is used to compute the parameters on our list of modularities
+'''
+print(f'-------------| Results |------------- \n',
+      f'Average modularity of 1000 random networks: \n {np.mean(modularities):.2f} \n',
       '\n', 
-      f'Standard deviation of 1000 random networks: \n {np.std(modularities):.2f}')
+      f'Standard deviation of 1000 random networks: \n {np.std(modularities):.2g}')
 ```
 
+***
 9. >Plot the distribution of the "random" modularity. Plot the actual modularity of the club split as a vertical line (use axvline).
 
 ```python
@@ -206,11 +216,21 @@ myFormat = mpl.dates.DateFormatter('%b %Y')
 ```python
 fig, ax = plt.subplots(figsize=(12,8))
 h1 = ax.hist(modularities, bins=12, label="Random networks")[2]
-l1  = ax.axvline(x=modularity(G), color='r', linewidth=4, label="Actual")
+l1  = ax.axvline(x=modularity(G)[0], color='r', linewidth=4, label="Actual")
 ax.legend((h1, l1), ('Random network', "Zacharys's Club"), loc='upper right', shadow=True,)
 ax.set_xlabel("Modularity")
 ax.set_ylabel("Networks")
+```
 
+```python
+'''
+A qqplot showing difference in residuals is helpful when the variance is very small as seen in the histogram above
+'''
+pplot = sm.ProbPlot(np.array(modularities).cumsum(), stats.t, fit=True)
+#fig = pplot.qqplot()
+fig = pplot.qqplot(line="45")
+h = plt.title("QQ-plot - of squared residuals from mean")
+plt.show()
 ```
 
 10. >Comment on the figure. Is the club split a good partitioning? Why do you think I asked you to perform a randomization experiment? What is the reason why we preserved the nodes degree?
@@ -220,14 +240,15 @@ The difference between actual modularity and the observed from our 1000 instance
 This experiment is very important to support our hypothesis that there is in fact several communities present. Without these experiments the observed communities could be because of extreme change, especially given the small amount of nodes, i.e. a slight modification to the graph as a whole would drastically change the modularity. By preserving the nodes degree we back our claim that the community structuring is in fact encoded in the wiring diagram i.e. the total amount of edges and the node degrees does support the existence of communities.
 
 
+***
 11. >Use the Python Louvain-algorithm implementation to find communities in this graph. Report the value of modularity found by the algorithm. Is it higher or lower than what you found above for the club split? What does this comparison reveal?
 
 ```python
 '''
 This code uses the python_louvain package implementing the algorithm.
-It returns a partitioning table/dict formatted as {node: community}, which is different..
-than required by the modularity functions used earlier. 
-The returned table is then converted in to a nested list containing individual lists of all..
+It returns a partitioning table/dict formatted as {node: community}, which is different
+than the required format by the modularity functions used earlier. 
+The returned table is then converted in to a nested list containing individual lists of all
 member nodes of a specific community, which is suitable for the modularity functions.
 For our own custom function we first assign node attributes with values corresponding to the
 assigned community provided by the Python Louvain algorithm
@@ -236,21 +257,27 @@ assigned community provided by the Python Louvain algorithm
 louvain_partition = community_louvain.best_partition(G) # Creates dictionary {node: community}
 
 louvain_set_of_communities = set(louvain_partition.values()) # Creates an iterable list over the found communities
-model1 = G.copy()
+model1 = copy.deepcopy(G)
 for _node in model1.nodes(): # Assigns commnunity attributes to our configuration model based on P. Louvain partitioning
     model1.nodes[_node]['club'] = louvain_partition[_node]
 
-print(f'Modularity of Louvain partition: {modularity(model1)[0]:.2f}')
+print(f'Modularity of Louvain partition: \n',
+      f'{modularity(model1)[0]:.2f} \n')
 
 louvain_communities = list()
 for _community in louvain_set_of_communities:  #add node to corresponding community and append the communities to a list of communities
     louvain_communities.append({key for key in louvain_partition.keys() if louvain_partition.get(key) == _community})
 
-print(f'[Built-in networkx function] Modularity of Zachary club network: {nx.algorithms.community.modularity(model1, louvain_communities):.2f}')
+print(f' Modularity of Zachary club network [Built-in networkx function]: \n',
+      f'{nx.algorithms.community.modularity(model1, louvain_communities):.2f}')
 ```
 
+***
 12. >Compare the communities found by the Louvain algorithm with the club split partitioning by creating a matrix D with dimension (2 times A), where A is the number of communities found by Louvain. We set entry D(i,j) to be the number of nodes that community i has in common with group split j. The matrix D is what we call a confusion matrix. Use the confusion matrix to explain how well the communities you've detected correspond to the club split partitioning.
 
+```python
+
+```
 
 Exercise: Community detection on the GME network.
 
@@ -260,11 +287,12 @@ Exercise: Community detection on the GME network.
 - Visualize the network, using netwulf (see Week 4). This time assign each node a different color based on their community. Describe the structure you observe.
 
 ```python
-
+with open('../data/json_network.json', 'r') as infile:
+    DG = nx.readwrite.json_graph.node_link_graph(json.load(infile))
 ```
 
 ```python
-
+DG.nodes(data=True)
 ```
 
 ```python
