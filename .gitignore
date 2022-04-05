@@ -4,3 +4,4 @@
 /.ipynb_checkpoints
 /comsci-env
 *.ipynb_checkpoints
+/data/wallstreet_subs_tokens_cleaned_lemma.csv
