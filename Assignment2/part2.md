@@ -5,7 +5,7 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: "1.3"
+      format_version: '1.3'
       jupytext_version: 1.13.7
   kernelspec:
     display_name: comsci-venv
@@ -26,7 +26,7 @@ import labMTsimple
 
 Choose d = March 13 2020, corona is anounced a national emergency
 
-2. > Build two lists ${l}$ and ${l_ref}$ containing all tokens for submissions posted on r/wallstreebets on day ${d}$, and in the 7 days preceding day ${d}$, respectively.
+2. > Build two lists ${l}$ and ${l_{ref}}$ containing all tokens for submissions posted on r/wallstreebets on day ${d}$, and in the 7 days preceding day ${d}$, respectively.
 
 ```python
 # March 13 00:01 2020 Represented as timestamp
@@ -42,7 +42,7 @@ end_l_ref = "1584054011"
 
 ```
 
-### Create the two lists ${l}$ and ${l_ref}$
+### Create the two lists ${l}$ and ${l_{ref}}$
 
 ```python
 wsb_submissions = pd.read_csv('../data/wallstreet_subs_tokens_cleaned_lemma.csv', parse_dates=['created_utc']).set_index('created_utc')
@@ -80,9 +80,9 @@ unique_l, unique_l_ref, unique_all_tokens = getAllUniquetokens(l), getAllUniquet
 
 ```
 
-3. > For each token ${i}$ , compute the relative frequency in the two lists ${l}$ and ${l_ref}$ . We call them ${p(i, l)}$ and ${p(i, l_ref)}$, respectively. The relative frequency is computed as the number of times a token occurs over the total length of the document. Store the result in a dictionary.
+3. > For each token ${i}$ , compute the relative frequency in the two lists ${l}$ and ${l_{ref}}$ . We call them ${p(i, l)}$ and ${p(i, l_{ref})}$, respectively. The relative frequency is computed as the number of times a token occurs over the total length of the document. Store the result in a dictionary.
 
-## Create functions that
+## Create functions that calculate frequency and relative frequency
 
 ```python
 def getFrequencyDist(tokens):
@@ -114,7 +114,7 @@ p_i_l_ref = getRelativeFrequencyDist(freqDist_rel)
 
 ```
 
-4. > For each token ${i}$ , compute the difference in relative frequency ${\delta p(i) = p(i,l)-p(i,l_ref)}$ . Store the values in a dictionary. Print the top 10 tokens (those with largest relative frequency). Do you notice anything interesting?
+4. > For each token ${i}$ , compute the difference in relative frequency ${\delta p(i) = p(i,l)-p(i,l_{ref})}$ . Store the values in a dictionary. Print the top 10 tokens (those with largest relative frequency). Do you notice anything interesting?
 
 ### Compute difference in relative frequency
 
@@ -155,15 +155,16 @@ def createHappinesDict(labMt_data, tokens):
 
 ```python
 labMt = pd.read_csv('../data/Hedonometer.csv').set_index("Word")
-happinesDict = createHappinesDict(labMt, i)
-happined_dict_ref = createHappinesDict(labMt, i_ref)
+
+happinesDict = createHappinesDict(labMt, unique_l)
+happined_dict_ref = createHappinesDict(labMt, unique_l_ref)
 
 ```
 
 ```python
 def calculateDeltaPhi(happinesDict, differenceDict):
     sigmaDict = dict()
-    for key in i:
+    for key in happinesDict:
         try:
             sigmaDict[key] = abs(happinesDict[key] * differenceDict[key])
         except:
@@ -184,7 +185,7 @@ for k in range(0,10):
 
 ## Explain in your own words the meaning of $\delta\Phi$.
 
-$\delta\Phi$ identifies which words contribute the most to this difference
+$\delta\Phi$ represents the amount of impact a word has on the sentiment of a text. Taking the product of the happinesscore and the relative frequence of a word gives a good indication of how much that word contributes to a certain emotion in the text.
 
 7. > Now install the shifterator Python package. We will use it for plotting Word Shifts.
 
@@ -195,9 +196,11 @@ import shifterator as sh
 8. > Use the function shifterator.WeightedAvgShift to plot the WordShift, showing which words contributed the most to make your day of choice d happier or more sad then days in the preceding 7 days. Comment on the figure.
 
 ```python
+labMtDict = dict(zip(labMt["Word in English"], labMt["Happiness Score"]))
+
 sentiment_shift = sh.WeightedAvgShift(type2freq_1=freqDist,
                                       type2freq_2=freqDist_rel,
-                                      type2score_1='labMT_English',
+                                      type2score_1=labMtDict,
                                       reference_value=5,
                                       stop_lens=[(4,6)]
                                      )
@@ -206,3 +209,5 @@ sentiment_shift.get_shift_graph(detailed=False,
 ```
 
 9. > How do words that you printed in step 6 relate to those shown by the WordShift?
+
+We can see a realy good corelation between the words from step 6 and those show by the wordshift. All the words from the top 10 is represented, except "like" and "can't".  
