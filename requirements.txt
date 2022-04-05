@@ -129,6 +129,9 @@ urllib3==1.26.8
 wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.2.3
+nltk==3.7
+labMTsimple==2.8.7
+shifterator==0.3.0
 widgetsnbextension==3.6.0
 wrapt==1.14.0
 yapf==0.32.0

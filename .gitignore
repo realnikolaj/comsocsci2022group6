@@ -2,3 +2,5 @@
 !Assignment1/G6_Assignment1.ipynb
 /venv
 /.ipynb_checkpoints
+/comsci-env
+*.ipynb_checkpoints
