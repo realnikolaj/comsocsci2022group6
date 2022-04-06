@@ -58,11 +58,7 @@ clubs = nx.attr_matrix(G, node_attr='club')[1]  # Gets the set of node attribute
 #nw.save("../config/assignment2/p3.json", stylized_club_network, config) # Save the config as p3clubnet.json
 ```
 
-\begin{figure}
-    <img src="../plots/assignment2/Part3_club_network.png" width="800" height="400">
-\label{fig1}\tag{Figure 1}\\
-\end{figure}
-   
+<img src="../plots/assignment2/Part3_club_network.png" width="800" height="400">
 
 
 
@@ -126,11 +122,13 @@ attribute type of integers, which is used later.
 '''
 for _node in G.nodes: # Change string attribute to int
     G.nodes[_node]['club'] = (0 if G.nodes[_node]['club'] == 'Mr. Hi' else 1)   
+mod_of_G = modularity(G)[0]
 print(f'-------------| Results |------------- \n',
       f'Modularity of Zachary club network: \n',
-      f'{modularity(G)[0]:.2f} \n',
+      f'{mod_of_G:.2f} \n',
       f'[Built-in networkx function] Modularity of Zachary club network: \n',
       f'{nx.algorithms.community.quality.modularity(G, modularity(G)[1], weight="club"):.2f} \n')
+
 ```
 
 ***
@@ -148,8 +146,7 @@ Repeat steps b. and c. to achieve at least N swaps (I suggest N to be larger tha
 We set a seed in this when creating the configuration to help with reprocudability.
 The function double_edge_swap from networkx implements the Algorithm above.
 '''
-
-seed = random.seed()
+seed = 42
 L = G.number_of_edges()
 model = nx.algorithms.double_edge_swap(copy.deepcopy(G), nswap=L+10, max_tries=1000, seed=seed)
 ```
@@ -179,7 +176,8 @@ modeldict = list(range(1000))
 modularities = list(range(1000))
 
 for _model in modeldict:
-        modeldict[_model] = nx.algorithms.double_edge_swap(copy.deepcopy(G), nswap=L+10, max_tries=1200, seed=np.random)
+        
+        modeldict[_model] = nx.algorithms.double_edge_swap(G, nswap=L+10, max_tries=1200, seed=np.random.randint(1000))
         modularities[_model] = modularity(modeldict[_model])[0]
 ```
 
@@ -196,7 +194,7 @@ Numpy function numpy.mean and numpy.std is used to compute the parameters on our
 print(f'-------------| Results |------------- \n',
       f'Average modularity of 1000 random networks: \n {np.mean(modularities):.2f} \n',
       '\n', 
-      f'Standard deviation of 1000 random networks: \n {np.std(modularities):.2g}')
+      f'Standard deviation of 1000 random networks: \n {np.std(modularities):.2f}')
 ```
 
 ***
@@ -215,9 +213,9 @@ myFormat = mpl.dates.DateFormatter('%b %Y')
 
 ```python
 fig, ax = plt.subplots(figsize=(12,8))
-h1 = ax.hist(modularities, bins=12, label="Random networks")[2]
-l1  = ax.axvline(x=modularity(G)[0], color='r', linewidth=4, label="Actual")
-ax.legend((h1, l1), ('Random network', "Zacharys's Club"), loc='upper right', shadow=True,)
+h1 = ax.hist(modularities, label="Random networks")[2]
+l1  = ax.axvline(x=mod_of_G, color='r', linewidth=4, label="Actual")
+ax.legend((h1, l1), ('Random networks', "Zacharys's Club"), loc='upper right', shadow=True,)
 ax.set_xlabel("Modularity")
 ax.set_ylabel("Networks")
 ```
@@ -229,15 +227,15 @@ A qqplot showing difference in residuals is helpful when the variance is very sm
 pplot = sm.ProbPlot(np.array(modularities).cumsum(), stats.t, fit=True)
 #fig = pplot.qqplot()
 fig = pplot.qqplot(line="45")
-h = plt.title("QQ-plot - of squared residuals from mean")
+h = plt.title("QQ-plot - of squared residuals from mean [random networks]")
 plt.show()
 ```
 
 10. >Comment on the figure. Is the club split a good partitioning? Why do you think I asked you to perform a randomization experiment? What is the reason why we preserved the nodes degree?
 
 
-The difference between actual modularity and the observed from our 1000 instances of a configuration model seems to be fairly normal distributed.  
-This experiment is very important to support our hypothesis that there is in fact several communities present. Without these experiments the observed communities could be because of extreme change, especially given the small amount of nodes, i.e. a slight modification to the graph as a whole would drastically change the modularity. By preserving the nodes degree we back our claim that the community structuring is in fact encoded in the wiring diagram i.e. the total amount of edges and the node degrees does support the existence of communities.
+The difference between actual modularity and the observed from our 1000 instances of a configuration model seems to be very high, which indicates that the original club split is based on actual communities interacting.  
+This experiment is very important to support our hypothesis that there is in fact several communities present and the wirring of the Zachary network is not just present because of chance. Without these experiments the observed communities could not be supported, especially given the small amount of nodes, i.e. a slight modification to the graph as a whole would drastically change the modularity. By preserving the nodes degree we back our claim that the community structuring is in fact encoded in the wiring diagram i.e. the total amount of edges and the node degrees does support the existence of an actual community.
 
 
 ***
@@ -275,50 +273,7 @@ print(f' Modularity of Zachary club network [Built-in networkx function]: \n',
 ***
 12. >Compare the communities found by the Louvain algorithm with the club split partitioning by creating a matrix D with dimension (2 times A), where A is the number of communities found by Louvain. We set entry D(i,j) to be the number of nodes that community i has in common with group split j. The matrix D is what we call a confusion matrix. Use the confusion matrix to explain how well the communities you've detected correspond to the club split partitioning.
 
-```python
 
-```
-
-Exercise: Community detection on the GME network.
-
-- Consider the GME network you built in Week 4, part 2.
-
-- Use the Python Louvain-algorithm implementation to find communities. How many communities do you find? What are their sizes? Report the value of modularity found by the algorithm. Is the modularity significantly different than 0?
-- Visualize the network, using netwulf (see Week 4). This time assign each node a different color based on their community. Describe the structure you observe.
-
-```python
-with open('../data/json_network.json', 'r') as infile:
-    DG = nx.readwrite.json_graph.node_link_graph(json.load(infile))
-```
-
-```python
-DG.nodes(data=True)
-```
-
-```python
-nx.algorithms.connectivity.connectivity.all_pairs_node_connectivity(model, nbunch = [0,1,2,3])
-```
-
-```python
-
-```
-
-### H1: Fundamental Hypothesis
-
-A network’s community structure is uniquely encoded in its wiring diagram.
-
-### H2: Connectedness and Density Hypothesis
-
-A community is a locally dense connected subgraph in a network.
-
-### H3: Random Hypothesis
-
-Randomly wired networks lack an inherent community structure.
-
-```python
-G.is_directed()
-```
-
-```python
-
-```
+<div class="alert alert-block alert-danger">
+There's unfortunately no more
+</div>
