@@ -33,7 +33,7 @@ def work(url):
 ```python
 metadata = pd.read_csv('../data/metadata.csv', sep=";", encoding="latin1", header=0)
 
-law_data = pd.DataFrame(columns=['year', 'number', 'text_content', 'edges'])
+law_data = pd.DataFrame(columns=['id', 'year', 'number', 'text_content', 'edges', 'isHistorical'])
 s = HTMLSession()
 
 for index, row in metadata.iterrows():
@@ -43,11 +43,12 @@ for index, row in metadata.iterrows():
     url = row['EliUrl'].split("dk/")
     law_id = url[1]
     print(edges)
-    r = requests.get('https://www.retsinformation.dk/api/document/'.format(law_id))
+    r = requests.get('https://www.retsinformation.dk/api/document/{}'.format(law_id))
     document= r.json()
     try:
         document_text = document[0]["documentHtml"]
-        df2 = pd.DataFrame([[year, number, document_text, edges]], columns=['year', 'number', 'text_content', 'edges'])
+        isHistorical = document[0]["documentHtml"]
+        df2 = pd.DataFrame([[law_id, year, number, document_text, edges, isHistorical]], columns=['id', 'year', 'number', 'text_content', 'edges'])
         law_data = pd.concat([law_data, df2])
     except:
         pass
