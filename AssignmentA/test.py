@@ -1,38 +1,18 @@
----
-jupyter:
-  jupytext:
-    formats: ipynb,md
-    text_representation:
-      extension: .md
-      format_name: markdown
-      format_version: '1.3'
-      jupytext_version: 1.13.7
-  kernelspec:
-    display_name: comsci-venv
-    language: python
-    name: comsci-venv
----
-
-Metadata.csv is a csv manually downloaded from the advanced search on https://www.retsinformation.dk. This can be automated if we want to
-
-```python
 import pandas as pd
 import requests
 from requests_html import HTMLSession
-```
+import re
 
-```python
+pattern = '/eli/.*'
+
 def work(url):
     r = s.get(url)
     r.html.render(keep_page=True, timeout=10, sleep=10)
     #for edge in res:
-    pattern = '/eli/.*'
     return [edge for edge in r.html.links if re.match(pattern, edge)]
-```
 
-```python
 metadata = pd.read_csv('../data/metadata.csv', sep=";", encoding="latin1", header=0)
-
+metadata = metadata.head(4)
 law_data = pd.DataFrame(columns=['year', 'number', 'text_content', 'edges'])
 s = HTMLSession()
 
@@ -43,7 +23,7 @@ for index, row in metadata.iterrows():
     url = row['EliUrl'].split("dk/")
     law_id = url[1]
     print(edges)
-    r = requests.get('https://www.retsinformation.dk/api/document/'.format(law_id))
+    r = requests.get('https://www.retsinformation.dk/api/document/{}'.format(law_id))
     document= r.json()
     try:
         document_text = document[0]["documentHtml"]
@@ -52,14 +32,4 @@ for index, row in metadata.iterrows():
     except:
         pass
 
-```
-
-```python
 law_data.to_csv("../data/law_data.csv", index=False)
-```
-
-```python
-test = pd.read_csv('../data/law_data.csv', sep=",", encoding='utf8')
-
-print(test.iat[1,2])
-```
