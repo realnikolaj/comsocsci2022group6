@@ -1,8 +1,10 @@
+# import HTMLSession from requests_html
 from requests_html import HTMLSession
 import re
 import pandas as pd
 import csv
-df = pd.read_csv('../data/metadata.csv', sep=";", encoding="latin1", header=0, usecols=[0,27])
+import time
+df = pd.read_csv('Resultat.csv', sep=";", encoding="latin1", header=0, usecols=[0,27])
 
 urls = []
 for x in df.EliUrl.values:
@@ -32,7 +34,7 @@ s = HTMLSession()
 
 main(urls)
 #main(urls[339:])
-with open('../data/edges.csv', 'w') as f:
+with open('edges.csv', 'w') as f:
     write = csv.writer(f)
     write.writerow(results)
 
