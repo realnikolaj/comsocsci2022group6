@@ -13,21 +13,18 @@ import pandas as pd
 import json
 from more_itertools import ichunked
 from contextlib import closing
-
 nest_asyncio.apply()
 
-# Til at se resultat efter:
-# df = bz2.BZ2File('..data/picl_with_edge_data.pbz2', 'rb')
-df = bz2.BZ2File('../data/picl_law_data.pbz2', 'rb')
+df = bz2.BZ2File('data/picl_law_data.pbz2', 'rb')
 df = cPickle.load(df)
 
+# Variables to scrape from source:"
 columns = ['idx', 'id', 'title', 'documentTypeId', 'shortName', 'full_text', 'isHistorical', 'ressort', "url",
-           "caseHistoryReferenceGroup", "stateLabel", "edges",
-           "metadata"]  # FJERNET 'Nummer', Add attributes to this list
+           "caseHistoryReferenceGroup", "stateLabel", "metadata", "edges"]
 
 # Using list to append for optimization note: don't increase dataframes in a loop!
 listdata = []
-pattern = '/eli/.*'
+pattern = '/eli/.*' #Used for eliminating links which are not documents
 
 
 class Retsinfo:
@@ -49,7 +46,7 @@ class Retsinfo:
         with AsyncHTMLSession(loop=loop, workers=self._workers) as session:
 
             for _batch in batch:
-                await self.run(session, _batch):
+                await self.run(session, _batch)
                 # for response in await self.run(session,_batch):
                 #     await self.append(response)
 
@@ -144,7 +141,7 @@ class Retsinfo:
 
     def write(self):
         result = pd.DataFrame(data=self._listdata, columns=columns)
-        with bz2.BZ2File('../data/picl_with_edge_data' + '.pbz2', 'w') as f:
+        with bz2.BZ2File('data/picl_data' + '.pbz2', 'w') as f:
             cPickle.dump(result, f)
         print('Success')
         print(result.size)
@@ -153,7 +150,7 @@ class Retsinfo:
 
 if __name__ == '__main__':
     batchsize = 32
-    retsinfo = Retsinfo(data=df[['id', 'url']][:1024], batchsize=batchsize, Timeout=120, workers=32, edges=True)
+    retsinfo = Retsinfo(data=df[['id', 'url']], batchsize=batchsize, Timeout=120, workers=16, edges=True)
     asyncio.run(retsinfo.main())
     retsinfo.write()
 
